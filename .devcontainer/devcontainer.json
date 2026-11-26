@@ -1,0 +1,52 @@
+// Claude Code Sandbox-Demo
+// Der Agent sieht NUR:
+//   /workspace  <- ./app        (lesen + schreiben)
+//   /data       <- ./messdaten  (nur lesen)
+// Der Ordner .devcontainer selbst ist im Container nicht sichtbar:
+// der Agent kann seine eigene Sandbox-Konfiguration nicht verändern.
+{
+  "name": "Claude Code Sandbox Demo",
+  "build": { "dockerfile": "Dockerfile" },
+
+  // NET_ADMIN/NET_RAW braucht nur das Firewall-Skript (iptables).
+  "runArgs": [
+    "--cap-add=NET_ADMIN",
+    "--cap-add=NET_RAW",
+    "--hostname=claude-sandbox"
+  ],
+
+  // Statt des ganzen Projektordners wird nur ./app eingebunden.
+  "workspaceMount": "source=${localWorkspaceFolder}/app,target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+
+  "mounts": [
+    // Eingabedaten: read-only durchgereicht
+    "source=${localWorkspaceFolder}/messdaten,target=/data,type=bind,readonly",
+    // Claude-Login/Verlauf in einem Docker-Volume (überlebt Rebuilds, liegt nicht im Host-Profil)
+    "source=claude-demo-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
+  ],
+
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
+    "DISABLE_AUTOUPDATER": "1",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+  },
+  // SSH-Agent des Hosts nicht in den Container weiterreichen
+  "remoteEnv": { "SSH_AUTH_SOCK": "" },
+
+  // Läuft einmalig beim Erstellen (vor der Firewall)
+  "postCreateCommand": "pip install --user -e '.[dev]'",
+  // Läuft bei jedem Start: Netzwerk auf Allowlist beschränken
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python", "anthropic.claude-code"],
+      "settings": {
+        "python.testing.pytestEnabled": true,
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}

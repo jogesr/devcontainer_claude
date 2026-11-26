@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pytest:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(motorlog:*)",
+      "Bash(python -m motorlog:*)",
+      "Bash(isolation-check)"
+    ],
+    "deny": [
+      "Bash(sudo:*)",
+      "Edit(/data/**)",
+      "Write(/data/**)"
+    ]
+  }
+}

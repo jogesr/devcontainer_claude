@@ -1,0 +1,3 @@
+Hier liegt das öffentliche Root-Zertifikat eines TLS-inspizierenden Firmen-Proxys
+(firmen-root-ca.crt). Erzeugen mit:  powershell -File .devcontainer\export-firmen-ca.ps1
+Ohne solchen Proxy kann der Ordner leer bleiben. *.crt-Dateien werden nicht eingecheckt.
